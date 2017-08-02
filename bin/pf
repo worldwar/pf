@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+gem 'pf'
+
+require 'pf'
+
+PF::CLI.start

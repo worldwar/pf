@@ -35,4 +35,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "minitest", "~> 5.0"
   spec.add_runtime_dependency "qiniu", ">= 6.8.1"
   spec.add_runtime_dependency "thor", ">= 0.19.4"
+  spec.add_runtime_dependency "boxr", ">= 1.4.0"
 end

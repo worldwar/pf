@@ -3,10 +3,11 @@ require "yaml"
 module PF
   class Profile
 
-    attr_accessor :qiniu
+    attr_accessor :qiniu, :box
 
     def initialize
       @qiniu = QiniuProfile.new(self)
+      @box = BoxProfile.new(self)
     end
 
     def save
@@ -44,6 +45,15 @@ module PF
     def self.qiniu
       profile.qiniu
     end
+
+    def self.box
+      p = profile
+      if p.box.nil?
+        p.box = BoxProfile.new(p)
+      end
+      p.save
+      p.box
+    end
   end
 
   class QiniuProfile
@@ -63,9 +73,66 @@ module PF
       @accounts.find { |account| account.name == name}
     end
 
+    def remove_account(name)
+      @accounts.delete_if{|account| account.name == name}
+      update_default
+    end
+
+    def update_default(name: nil)
+      if name.nil?
+        if @default_account.nil?
+          unless @accounts.empty?
+            @default_account = @accounts.first.name
+          end
+        else
+          if @accounts.empty?
+            @default_account = nil
+          else
+            if account.nil?
+              @default_account = @accounts.first.name
+            end
+          end
+        end
+      else
+        if exist_account? name
+          @default_account = name
+        else
+          update_default
+        end
+      end
+    end
+
+    def add_account(new_account, default: true)
+      updated = true
+      account = account(new_account.name)
+
+      if account.nil?
+        @accounts.push(new_account)
+      else
+        if account.equal? new_account
+          updated = false
+        else
+          # remove_account(new_account.name)
+          @accounts.delete_if{|a| a.name == new_account}
+          @accounts.unshift(new_account)
+        end
+      end
+
+      if default
+        @default_account = new_account.name
+      end
+
+      update_default
+      updated
+    end
+
     def save
       @parent.save
     end
+  end
+
+  class BoxProfile < QiniuProfile
+
   end
 
   class SecretKeyAccount
@@ -74,6 +141,26 @@ module PF
       @name = name
       @access_key = access_key
       @secret_key = secret_key
+    end
+
+    def equal?(other)
+      @name == other.name and @access_key == other.access_key and @secret_key = other.secret_key
+    end
+  end
+
+  class OAuth2Account
+    attr_accessor :name, :client_id, :client_secret, :access_token, :refresh_token
+
+    def initialize(name, client_id, client_secret, access_token: nil, refresh_token: nil)
+      @name = name
+      @client_id = client_id
+      @client_secret = client_secret
+      @access_token = access_token
+      @refresh_token = refresh_token
+    end
+
+    def equal?(other)
+      @name == other.name and @client_id = other.client_id and @client_secret = other.client_secret
     end
   end
 end

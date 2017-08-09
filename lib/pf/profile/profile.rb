@@ -136,7 +136,7 @@ module PF
   end
 
   class SecretKeyAccount
-    attr_accessor :name, :access_key, :secret_key
+    attr_accessor :name, :access_key, :secret_key, :default_bucket
     def initialize(name, access_key, secret_key)
       @name = name
       @access_key = access_key

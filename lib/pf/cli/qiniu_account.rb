@@ -60,5 +60,31 @@ module PF
         qiniu.save
       end
     end
+
+    desc "account default <account_name>", "remove specified account"
+    def default(account_name, key=nil, value=nil)
+      qiniu = Profile.qiniu
+
+      account = qiniu.account(account_name)
+
+      if account.nil?
+        puts "account '#{account_name}' not exists"
+        return
+      end
+
+      if key.nil?
+        qiniu.default_account = account_name
+        qiniu.update_default
+        qiniu.save
+      else
+        case key
+          when nil
+            puts "no value provided for key '#{key}'"
+            return
+          when 'bucket' then account.default_bucket = value
+        end
+        qiniu.save
+      end
+    end
   end
 end

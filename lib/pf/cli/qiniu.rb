@@ -12,20 +12,19 @@ module PF
     desc "push <filename> [<bucket_name>]", "upload file to qiniu service to <bucket_name>"
     def push(filepath, bucket=nil)
       qiniu = Profile.qiniu()
+      account = qiniu.account()
+      if account.nil?
+        puts "You haven't add any qiniu accounts. Please add an qiniu account before push"
+        return
+      end
+
       if bucket.nil?
-        bucket = qiniu.default_bucket
+        bucket = account.default_bucket
         if bucket.nil?
           puts "pass bucket name in command line, like 'pf qiniu push FILENAME BUCKET_NAME',"
           "or set default qiniu bucket using 'pf qiniu default bucket BUCKET_NAME' before push"
           return
         end
-      end
-
-      account = qiniu.account()
-
-      if account.nil?
-        puts "You haven't add any qiniu accounts. Please add an qiniu account before push"
-        return
       end
 
       action = Action.new(account)
